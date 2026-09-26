@@ -14,8 +14,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# lib/  # disabled: AutoHarden ships shell helpers under lib/
+# lib64/
 parts/
 sdist/
 var/
@@ -117,3 +117,12 @@ dmypy.json
 .vscode/
 *.swp
 *.swo
+
+# AutoHarden runtime / release artifacts
+reports/*.md
+!reports/.gitkeep
+!examples/reports/**
+dist/
+*.tar.gz
+*.sha256
+docs/director-checklist.pdf

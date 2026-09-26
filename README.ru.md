@@ -1,54 +1,37 @@
 # AutoHarden-Toolkit
 
-> Автоматическое усиление безопасности серверов на основе CIS Benchmarks.
+> Автоматическое усиление серверов с CIS-ориентированными профилями, dry-run по умолчанию и отчётами для директора.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-linux-lightgrey)](https://www.kernel.org/)
+[![Brand](https://img.shields.io/badge/Run__as__daemon-hardening-blue)](https://run-as-daemon.ru)
 
-**AutoHarden-Toolkit** — это легковесный модульный фреймворк, разработанный для автоматизации настройки безопасности Linux-серверов в соответствии с рекомендациями CIS (Center for Internet Security). Он гарантирует, что ваша инфраструктура соответствует отраслевым стандартам безопасности с минимальным ручным вмешательством.
+**AutoHarden-Toolkit** (Starter Hub) — CLI для hardening Linux. По умолчанию **dry-run**; реальные изменения только с явным `--apply`.
 
-## Возможности
-
-- **Соответствие CIS**: Автоматизирует проверки и исправления по стандартам CIS Benchmarks.
-- **Модульная архитектура**: Включение и отключение конкретных модулей защиты.
-- **Идемпотентность**: Безопасный повторный запуск; применяются только необходимые изменения.
-- **Режим аудита**: Возможность "сухого прогона" (dry-run) для просмотра изменений перед их применением.
+**English:** [README.md](README.md)
 
 ## Быстрый старт
 
-### Требования
+```bash
+git clone https://github.com/ranas-mukminov/AutoHarden-Toolkit.git
+cd AutoHarden-Toolkit
 
-- Linux Server (Ubuntu/Debian/CentOS)
-- Права Root
+./bin/autoharden run --profile smb-default
+sudo ./bin/autoharden run --profile smb-default --apply --report reports/applied.md
+```
 
-### Установка и использование
+> Без `--apply` система не меняется. Перед apply проверьте SSH-ключи.
 
-1.  Клонируйте репозиторий:
-    ```bash
-    git clone https://github.com/ranas-mukminov/AutoHarden-Toolkit.git
-    cd AutoHarden-Toolkit
-    ```
+## Профиль `smb-default`
 
-2.  Запустите скрипт настройки:
-    ```bash
-    sudo bash harden.sh
-    ```
+Безопасный набор для SMB / небольших серверов: SSH, sysctl, пакеты, опционально UFW.
 
-## Настройка
+## Документы
 
-Инструмент настраивается через переменные окружения или конфигурационный файл (ожидается в v1.0). В настоящее время демо-скрипт запускается с безопасными настройками по умолчанию.
+- Чеклист директора: [`docs/director-checklist.md`](docs/director-checklist.md) (+ PDF через `./scripts/generate-director-pdf.sh`)
+- Опциональный pre-join для K3s: [`docs/k3s-pre-join-bootstrap.md`](docs/k3s-pre-join-bootstrap.md)
+- Упаковка релиза: `./scripts/package-release.sh 0.2.0`
 
-## Коммерческая поддержка
+## Лицензия и платная поддержка
 
-Нужна настройка безопасности уровня Enterprise, кастомные профили CIS или постоянный аудит безопасности?
-
-Я предоставляю профессиональные услуги DevOps и Security:
-- Аудит безопасности инфраструктуры
-- Внедрение соответствия CIS/GDPR/HIPAA
-- Автоматизированные пайплайны защиты
-
-👉 **[Посетите run-as-daemon.ru](https://run-as-daemon.ru)** или мой **[GitHub профиль](https://github.com/ranas-mukminov)**.
-
-## Лицензия
-
-Этот проект распространяется под лицензией MIT - подробности в файле [LICENSE](LICENSE).
+MIT — см. [LICENSE](LICENSE). Платная поддержка / commercial Starter: **Run_as_daemon** — [run-as-daemon.ru](https://run-as-daemon.ru).

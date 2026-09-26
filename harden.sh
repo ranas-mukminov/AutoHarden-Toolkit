@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# harden.sh — SSH hardening module (CIS-oriented)
-# Usage: ./harden.sh --audit | --apply
-# Audit requires read access to /etc/ssh/sshd_config (typically root or ssh group).
-# Apply requires root, validates config with sshd -t before replacing the live file.
+# harden.sh — standalone SSH hardening module (CIS-oriented)
+# Prefer the profile CLI for Starter Hub workflows:
+#   ./bin/autoharden run --profile smb-default
+#   ./bin/autoharden run --profile smb-default --apply
+# Usage (legacy): ./harden.sh --audit | --apply
 
 set -euo pipefail
 

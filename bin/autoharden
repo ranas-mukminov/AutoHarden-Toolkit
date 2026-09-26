@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# AutoHarden-Toolkit CLI
+# Default: dry-run. Real changes require explicit --apply.
+set -euo pipefail
+
+AH_BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${AH_BIN_DIR}/../lib/common.sh"
+# shellcheck disable=SC1091
+source "${AH_BIN_DIR}/../lib/report.sh"
+
+usage() {
+  cat <<USAGE
+AutoHarden-Toolkit v${AH_VERSION} — ${AH_BRAND}
+CIS-oriented Linux hardening with human-readable reports.
+
+USAGE:
+  autoharden <command> [options]
+
+COMMANDS:
+  run       Audit (dry-run) or apply a profile; print/write a Markdown report
+  report    Same as run in dry-run (alias focused on reporting)
+  profiles  List available profiles
+  help      Show this help
+
+OPTIONS (run / report):
+  --profile NAME   Profile to use (default: smb-default)
+  --apply          Apply changes (REQUIRED for real modifications)
+  --report PATH    Write Markdown report to PATH (also printed to stdout)
+  --quiet          Print report only (less progress noise)
+
+SAFETY:
+  Without --apply the host is never modified. Dry-run shows planned changes.
+  Prefer:  sudo ./bin/autoharden run --profile smb-default
+  Then:    sudo ./bin/autoharden run --profile smb-default --apply
+
+EXAMPLES:
+  ./bin/autoharden run
+  ./bin/autoharden run --profile smb-default --report reports/last.md
+  sudo ./bin/autoharden run --apply --report reports/applied.md
+  ./bin/autoharden report --profile smb-default
+
+Docs: docs/director-checklist.md · docs/k3s-pre-join-bootstrap.md
+Site: ${AH_SITE} · ${AH_SITE_EN}
+USAGE
+}
+
+load_modules() {
+  local m
+  for m in ${MODULES:-}; do
+    local f="${AH_ROOT}/lib/modules/${m}.sh"
+    [[ -f "$f" ]] || ah_die "Module script missing: $f"
+    # shellcheck disable=SC1090
+    source "$f"
+  done
+}
+
+cmd_run() {
+  local profile="smb-default"
+  local mode="dry-run"
+  local report_path=""
+  local quiet=0
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --profile) profile="${2:-}"; shift 2 ;;
+      --apply) mode="apply"; shift ;;
+      --report) report_path="${2:-}"; shift 2 ;;
+      --quiet|-q) quiet=1; shift ;;
+      -h|--help) usage; exit 0 ;;
+      *) ah_die "Unknown option: $1 (see: autoharden help)" ;;
+    esac
+  done
+
+  ah_load_profile "$profile"
+  load_modules
+
+  report_reset
+  REPORT_MODE="$mode"
+  REPORT_PROFILE="$profile"
+  REPORT_HOST="$(hostname -f 2>/dev/null || hostname || echo unknown)"
+
+  if [[ "$mode" == "apply" ]]; then
+    ah_require_root
+    [[ "$quiet" -eq 1 ]] || ah_log "APPLY mode for profile=$profile — changes will be written"
+  else
+    [[ "$quiet" -eq 1 ]] || ah_log "DRY-RUN profile=$profile — no system changes (pass --apply to apply)"
+  fi
+
+  report_section "Run context"
+  report_item info "Profile file: ${PROFILE_FILE}"
+  report_item info "Modules: ${MODULES}"
+  report_item info "Mode: ${mode}"
+
+  local m fn
+  for m in ${MODULES}; do
+    fn="module_${m}_run"
+    if declare -F "$fn" >/dev/null; then
+      "$fn" "$mode"
+    else
+      report_item skipped "module $m has no ${fn}()"
+    fi
+  done
+
+  if [[ -z "$report_path" ]]; then
+    report_path="${AH_ROOT}/reports/autoharden-${profile}-$(ah_filestamp).md"
+  fi
+  report_write "$report_path"
+}
+
+cmd_profiles() {
+  echo "Available profiles:"
+  ah_list_profiles | while IFS=$'\t' read -r name desc; do
+    printf '  %-16s %s\n' "$name" "$desc"
+  done
+}
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+  case "$cmd" in
+    run) cmd_run "$@" ;;
+    report) cmd_run "$@" ;;  # report is dry-run oriented; --apply still honored if passed
+    profiles|list-profiles) cmd_profiles ;;
+    help|-h|--help) usage ;;
+    version|--version|-V) echo "AutoHarden-Toolkit ${AH_VERSION}" ;;
+    *) ah_die "Unknown command: $cmd (try: autoharden help)" ;;
+  esac
+}
+
+main "$@"

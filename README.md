@@ -1,54 +1,103 @@
 # AutoHarden-Toolkit
 
-> Automated server hardening based on CIS Benchmarks.
+> Automated server hardening with CIS-oriented profiles, dry-run by default, and director-ready reports.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-linux-lightgrey)](https://www.kernel.org/)
+[![Brand](https://img.shields.io/badge/Run__as__daemon-hardening-blue)](https://run-as-daemon.ru)
 
-**AutoHarden-Toolkit** is a lightweight, modular framework designed to automate the hardening of Linux servers according to CIS (Center for Internet Security) Benchmarks. It ensures your infrastructure meets industry-standard security baselines with minimal manual intervention.
+**AutoHarden-Toolkit** (Starter Hub) is a lightweight CLI for hardening Linux servers. Default mode is **dry-run**; real changes require explicit `--apply`.
+
+**Русский:** [README.ru.md](README.ru.md)
 
 ## Features
 
-- **CIS Compliance**: Automates checks and remediation for CIS Benchmarks.
-- **Modular Design**: Enable or disable specific hardening modules.
-- **Idempotent**: Safe to run multiple times; only applies necessary changes.
-- **Audit Mode**: Dry-run capability to preview changes before applying them.
+- **CLI** — `run` + `report` with Markdown output
+- **Profile `smb-default`** — safe baseline for SMB / small servers (SSH, sysctl, packages, optional UFW)
+- **Dry-run default** — no host changes unless `--apply`
+- **Director checklist** — MD + PDF-ready branding for Run_as_daemon
+- **Release packaging** — tarball + SHA256 script
+- **Optional K3s pre-join** docs for Secure-K3s Starter
 
-## Quick Start
+## Quick start
 
-### Prerequisites
+```bash
+git clone https://github.com/ranas-mukminov/AutoHarden-Toolkit.git
+cd AutoHarden-Toolkit
+chmod +x bin/autoharden harden.sh scripts/*.sh
 
-- Linux Server (Ubuntu/Debian/CentOS)
-- Root privileges
+# Dry-run (default) — prints and writes a Markdown report
+./bin/autoharden run --profile smb-default
 
-### Installation & Usage
+# Or write a specific report path
+./bin/autoharden report --profile smb-default --report reports/audit.md
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/ranas-mukminov/AutoHarden-Toolkit.git
-    cd AutoHarden-Toolkit
-    ```
+# Apply ONLY after review (requires root + working SSH keys for SSH module)
+sudo ./bin/autoharden run --profile smb-default --apply --report reports/applied.md
+```
 
-2.  Run the hardening script:
-    ```bash
-    sudo bash harden.sh
-    ```
+> **Warning:** Never pass `--apply` without reviewing the dry-run report and confirming key-based SSH access.
 
-## Configuration
+### Legacy SSH script
 
-The toolkit is configured via environment variables or a config file (coming soon in v1.0). Currently, the demo script runs with default safe settings.
+`harden.sh` remains available as a standalone SSH audit/apply helper (`--audit` / `--apply`). Prefer the CLI for profiles and director reports. Narrow extract: [ssh-harden](https://github.com/ranas-mukminov/ssh-harden).
 
-## Commercial Support
+## Profiles
 
-Need enterprise-grade hardening, custom CIS profiles, or ongoing security auditing?
+| Profile | Description |
+|---------|-------------|
+| `smb-default` | Safe CIS-oriented baseline for SMB / small standalone Linux servers |
 
-I provide professional DevOps & Security services:
-- Infrastructure Security Audit
-- CIS/GDPR/HIPAA Compliance Implementation
-- Automated Hardening Pipelines
+List profiles:
 
-👉 **[Visit run-as-daemon.ru](https://run-as-daemon.ru)** or check my **[GitHub Profile](https://github.com/ranas-mukminov)**.
+```bash
+./bin/autoharden profiles
+```
 
-## License
+## Director checklist (B2)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Source of truth: [`docs/director-checklist.md`](docs/director-checklist.md)
+- Generate PDF (requires `pandoc` and/or `wkhtmltopdf`):
+
+```bash
+./scripts/generate-director-pdf.sh
+```
+
+## K3s pre-join (optional, A4)
+
+See [`docs/k3s-pre-join-bootstrap.md`](docs/k3s-pre-join-bootstrap.md) — optional harden before joining [Secure-K3s-GitOps-Template](https://github.com/ranas-mukminov/Secure-K3s-GitOps-Template). Does not block the base template path.
+
+## Release packaging (B3)
+
+```bash
+./scripts/package-release.sh 0.2.0
+# → dist/AutoHarden-Toolkit-0.2.0.tar.gz
+# → dist/AutoHarden-Toolkit-0.2.0.tar.gz.sha256
+```
+
+Verify a download:
+
+```bash
+sha256sum -c AutoHarden-Toolkit-0.2.0.tar.gz.sha256
+```
+
+## License & paid support
+
+This project is **MIT** open source — see [LICENSE](LICENSE).
+
+**Paid support / commercial Starter** (custom profiles, fleet rollout, onboarding) is offered by **Run_as_daemon**:
+
+- https://run-as-daemon.ru
+- https://run-as-daemon.dev
+
+The MIT grant does **not** include SLA, managed hardening, or commercial redistribution rights beyond the license text.
+
+## Related
+
+- [ssh-harden](https://github.com/ranas-mukminov/ssh-harden) — narrow SSH helper
+- [Secure-K3s-GitOps-Template](https://github.com/ranas-mukminov/Secure-K3s-GitOps-Template) — K3s GitOps Starter
+- [k8s-fintech-baseline](https://github.com/ranas-mukminov/k8s-fintech-baseline)
+
+## Disclaimer
+
+CIS-oriented **examples**, not a compliance certification. Review before production use. Keep an out-of-band console when changing SSH.

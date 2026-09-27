@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-linux-lightgrey)](https://www.kernel.org/)
 [![Release](https://img.shields.io/github/v/release/ranas-mukminov/AutoHarden-Toolkit?display_name=tag)](https://github.com/ranas-mukminov/AutoHarden-Toolkit/releases/tag/v0.2.0)
-[![Brand](https://img.shields.io/badge/Run__as__daemon-hardening-blue)](https://run-as-daemon.ru)
+[![Brand](https://img.shields.io/badge/Run__as__daemon-hardening-blue)](https://run-as-daemon.pro)
 
 **AutoHarden-Toolkit** (Starter Hub) is a lightweight CLI for hardening Linux servers. Default mode is **dry-run**; real changes require explicit `--apply`.
 
@@ -100,8 +100,9 @@ This project is **MIT** open source — see [LICENSE](LICENSE).
 
 **Paid support / commercial Starter** (custom profiles, fleet rollout, onboarding) is offered by **Run_as_daemon**:
 
-- https://run-as-daemon.ru
-- https://run-as-daemon.dev
+- **Primary CTA:** [Telegram @en_run_as_daemon_dev](https://t.me/en_run_as_daemon_dev)
+- HQ: https://run-as-daemon.pro
+- Gateway: https://run-as-daemon.dev
 
 The MIT grant does **not** include SLA, managed hardening, or commercial redistribution rights beyond the license text.
 

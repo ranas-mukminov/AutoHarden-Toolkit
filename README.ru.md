@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-linux-lightgrey)](https://www.kernel.org/)
-[![Brand](https://img.shields.io/badge/Run__as__daemon-hardening-blue)](https://run-as-daemon.ru)
+[![Brand](https://img.shields.io/badge/Run__as__daemon-hardening-blue)](https://run-as-daemon.pro)
 
 **AutoHarden-Toolkit** (Starter Hub) — CLI для hardening Linux. По умолчанию **dry-run**; реальные изменения только с явным `--apply`.
 
@@ -34,4 +34,4 @@ sudo ./bin/autoharden run --profile smb-default --apply --report reports/applied
 
 ## Лицензия и платная поддержка
 
-MIT — см. [LICENSE](LICENSE). Платная поддержка / commercial Starter: **Run_as_daemon** — [run-as-daemon.ru](https://run-as-daemon.ru).
+MIT — см. [LICENSE](LICENSE). Платная поддержка / commercial Starter: **Run_as_daemon** — [Telegram](https://t.me/en_run_as_daemon_dev) · [HQ](https://run-as-daemon.pro).

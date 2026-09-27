@@ -4,6 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-linux-lightgrey)](https://www.kernel.org/)
+[![Release](https://img.shields.io/github/v/release/ranas-mukminov/AutoHarden-Toolkit?display_name=tag)](https://github.com/ranas-mukminov/AutoHarden-Toolkit/releases/tag/v0.2.0)
 [![Brand](https://img.shields.io/badge/Run__as__daemon-hardening-blue)](https://run-as-daemon.ru)
 
 **AutoHarden-Toolkit** (Starter Hub) is a lightweight CLI for hardening Linux servers. Default mode is **dry-run**; real changes require explicit `--apply`.
@@ -18,6 +19,15 @@
 - **Director checklist** — MD + PDF-ready branding for Run_as_daemon
 - **Release packaging** — tarball + SHA256 script
 - **Optional K3s pre-join** docs for Secure-K3s Starter
+
+
+## Latest release
+
+**[v0.2.0 — Starter Hub](https://github.com/ranas-mukminov/AutoHarden-Toolkit/releases/tag/v0.2.0)** — download the release tarball / notes, or clone `main` and use the CLI below.
+
+**CLI (dry-run + report):** `./bin/autoharden run --profile smb-default` (default dry-run) · `./bin/autoharden report --profile smb-default --report reports/audit.md`
+
+**Sample director-report artifact (fake SMB, labeled SAMPLE):** [`examples/reports/SAMPLE-DIRECTOR-REPORT.md`](examples/reports/SAMPLE-DIRECTOR-REPORT.md) · also [`examples/reports/SAMPLE-smb-default-dry-run.md`](examples/reports/SAMPLE-smb-default-dry-run.md)
 
 ## Quick start
 
@@ -57,6 +67,7 @@ List profiles:
 ## Director checklist (B2)
 
 - Source of truth: [`docs/director-checklist.md`](docs/director-checklist.md)
+- **Sample filled report (fake SMB):** [`examples/reports/SAMPLE-DIRECTOR-REPORT.md`](examples/reports/SAMPLE-DIRECTOR-REPORT.md)
 - Generate PDF (requires `pandoc` and/or `wkhtmltopdf`):
 
 ```bash
@@ -68,6 +79,8 @@ List profiles:
 See [`docs/k3s-pre-join-bootstrap.md`](docs/k3s-pre-join-bootstrap.md) — optional harden before joining [Secure-K3s-GitOps-Template](https://github.com/ranas-mukminov/Secure-K3s-GitOps-Template). Does not block the base template path.
 
 ## Release packaging (B3)
+
+Published release: **[v0.2.0](https://github.com/ranas-mukminov/AutoHarden-Toolkit/releases/tag/v0.2.0)**.
 
 ```bash
 ./scripts/package-release.sh 0.2.0

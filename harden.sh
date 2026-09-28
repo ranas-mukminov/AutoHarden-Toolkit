@@ -187,13 +187,13 @@ if [[ ! -r "$SSHD_CONF" ]]; then
   exit 1
 fi
 
-WORKFILE=""
-cleanup() {
-  if [[ -n "${WORKFILE:-}" && -f "${WORKFILE:-}" && "$WORKFILE" != "$SSHD_CONF" ]]; then
-    rm -f "$WORKFILE"
+WORKDIR=""
+cleanup_workdir() {
+  if [[ -n "${WORKDIR:-}" && -d "${WORKDIR:-}" ]]; then
+    rm -rf "$WORKDIR"
   fi
 }
-trap cleanup EXIT
+trap cleanup_workdir EXIT
 
 if [[ "$MODE" == "apply" ]]; then
   require_root
@@ -201,12 +201,18 @@ if [[ "$MODE" == "apply" ]]; then
   mkdir -p "$(dirname "$LOGFILE")"
   touch "$LOGFILE"
   backup_conf
-  WORKFILE=$(mktemp /tmp/sshd_config.autoharden.XXXXXX)
-  cp -a "$SSHD_CONF" "$WORKFILE"
+  WORKDIR=$(mktemp -d /root/.autoharden.XXXXXX)
 else
-  WORKFILE=$(mktemp /tmp/sshd_config.autoharden.XXXXXX)
-  cp -a "$SSHD_CONF" "$WORKFILE"
+  if [[ $(id -u) -eq 0 ]]; then
+    WORKDIR=$(mktemp -d /root/.autoharden.XXXXXX)
+  else
+    WORKDIR=$(mktemp -d "${TMPDIR:-/tmp}/autoharden.XXXXXX")
+    chmod 700 "$WORKDIR"
+  fi
 fi
+WORKFILE="${WORKDIR}/sshd_config"
+cp -a "$SSHD_CONF" "$WORKFILE"
+chmod 600 "$WORKFILE"
 
 for key in "${!SETTINGS[@]}"; do
   value="${SETTINGS[$key]}"
@@ -217,8 +223,9 @@ if [[ "$MODE" == "apply" ]]; then
   echo
   echo "Validating proposed sshd_config..."
   validate_sshd_config "$WORKFILE"
-  # Atomic-ish replace: install preserves mode when possible
-  install -m 0644 "$WORKFILE" "$SSHD_CONF"
+  # Preserve original sshd_config mode (do not loosen 0600 -> 0644).
+  ORIG_MODE=$(stat -c '%a' "$SSHD_CONF" 2>/dev/null || echo 600)
+  install -m "0${ORIG_MODE}" "$WORKFILE" "$SSHD_CONF"
   log "INSTALL: validated config written to $SSHD_CONF"
   echo "Applying changes and attempting to restart SSH service..."
   # Re-validate live file before restart

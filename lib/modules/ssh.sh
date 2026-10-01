@@ -11,9 +11,18 @@ module_ssh_run() {
     return 0
   fi
 
-  local work
-  work=$(mktemp /tmp/autoharden-sshd.XXXXXX)
+  local workdir work
+  # Prefer a private directory (not world-sticky /tmp) so the workfile is not
+  # umask-readable by other users; fall back to TMPDIR with mode 700.
+  if [[ $(id -u) -eq 0 ]]; then
+    workdir=$(mktemp -d /root/.autoharden.XXXXXX)
+  else
+    workdir=$(mktemp -d "${TMPDIR:-/tmp}/autoharden.XXXXXX")
+    chmod 700 "$workdir"
+  fi
+  work="$workdir/sshd_config"
   cp -a "$conf" "$work"
+  chmod 600 "$work"
 
   local key want current
   for key in PasswordAuthentication PermitRootLogin MaxAuthTries X11Forwarding AllowTcpForwarding; do
@@ -49,22 +58,25 @@ module_ssh_run() {
     fi
     keys_file="${home_dir}/.ssh/authorized_keys"
     if [[ ! -s "$keys_file" ]]; then
-      rm -f "$work"
+      rm -rf "$workdir"
       ah_die "Refusing SSH apply: no authorized_keys at $keys_file (lockout risk)"
     fi
 
     local sshd_bin
     sshd_bin=$(command -v sshd || true)
     [[ -z "$sshd_bin" && -x /usr/sbin/sshd ]] && sshd_bin=/usr/sbin/sshd
-    [[ -n "$sshd_bin" ]] || { rm -f "$work"; ah_die "sshd not found; cannot validate"; }
+    [[ -n "$sshd_bin" ]] || { rm -rf "$workdir"; ah_die "sshd not found; cannot validate"; }
 
     local bak="/etc/ssh/sshd_config.autoharden-$(ah_filestamp)"
     cp -a "$conf" "$bak"
     if ! "$sshd_bin" -t -f "$work"; then
-      rm -f "$work"
+      rm -rf "$workdir"
       ah_die "sshd -t failed for proposed config; live file unchanged"
     fi
-    install -m 0644 "$work" "$conf"
+    # Preserve original sshd_config mode (do not loosen 0600 -> 0644).
+    local orig_mode
+    orig_mode=$(stat -c '%a' "$conf" 2>/dev/null || echo 600)
+    install -m "0${orig_mode}" "$work" "$conf"
     "$sshd_bin" -t -f "$conf" || ah_die "live sshd_config failed validation after install"
     report_item info "Backup: $bak"
     if systemctl list-unit-files 2>/dev/null | grep -q '^sshd.service'; then
@@ -74,5 +86,5 @@ module_ssh_run() {
     fi
   fi
 
-  rm -f "$work"
+  rm -rf "$workdir"
 }

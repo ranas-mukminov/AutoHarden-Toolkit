@@ -19,16 +19,18 @@ module_firewall_run() {
   status=$(ufw status 2>/dev/null | head -1 || true)
 
   if [[ "$mode" != "apply" ]]; then
-    report_item planned "ufw default incoming ${FIREWALL_DEFAULT_INCOMING:-deny}"
-    report_item planned "ufw default outgoing ${FIREWALL_DEFAULT_OUTGOING:-allow}"
+    report_item planned "ufw default ${FIREWALL_DEFAULT_INCOMING:-deny} incoming"
+    report_item planned "ufw default ${FIREWALL_DEFAULT_OUTGOING:-allow} outgoing"
     [[ "${FIREWALL_ALLOW_SSH:-yes}" == "yes" ]] && report_item planned "ufw allow OpenSSH/ssh"
     report_item planned "ufw --force enable (only with --apply)"
     report_item info "Current: ${status:-unknown}"
     return 0
   fi
 
-  ufw default incoming "${FIREWALL_DEFAULT_INCOMING:-deny}" >/dev/null
-  ufw default outgoing "${FIREWALL_DEFAULT_OUTGOING:-allow}" >/dev/null
+  # ufw syntax is `ufw default <allow|deny|reject> <incoming|outgoing|routed>`;
+  # the reversed order is rejected as "Invalid syntax" and aborts --apply under set -e.
+  ufw default "${FIREWALL_DEFAULT_INCOMING:-deny}" incoming >/dev/null
+  ufw default "${FIREWALL_DEFAULT_OUTGOING:-allow}" outgoing >/dev/null
   report_item applied "ufw defaults set (in=${FIREWALL_DEFAULT_INCOMING:-deny}, out=${FIREWALL_DEFAULT_OUTGOING:-allow})"
   if [[ "${FIREWALL_ALLOW_SSH:-yes}" == "yes" ]]; then
     ufw allow OpenSSH >/dev/null 2>&1 || ufw allow 22/tcp >/dev/null 2>&1 || true
